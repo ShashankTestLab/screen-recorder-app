@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Capture Permission Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+        }
+        
+        .test-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(78,205,196,0.4);
+        }
+        
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .success { background: rgba(46,213,115,0.2); border: 1px solid #2ed573; color: #2ed573; }
+        .error { background: rgba(255,107,107,0.2); border: 1px solid #ff6b6b; color: #ff6b6b; }
+        .warning { background: rgba(255,193,7,0.2); border: 1px solid #ffc107; color: #ffc107; }
+        .info { background: rgba(78,205,196,0.2); border: 1px solid #4ecdc4; color: #4ecdc4; }
+        
+        .fix-steps {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #4ecdc4;
+        }
+        
+        .fix-steps h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+        
+        .fix-steps ol {
+            margin-left: 20px;
+        }
+        
+        .fix-steps li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .browser-info {
+            font-family: monospace;
+            font-size: 14px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1>🔍 Screen Capture Diagnostics</h1>
+        <p>This will help identify exactly what's blocking screen recording</p>
+        
+        <div class="browser-info">
+            <strong>Browser Info:</strong><br>
+            <span id="browserInfo"></span><br>
+            <strong>Location:</strong> <span id="locationInfo"></span><br>
+            <strong>HTTPS:</strong> <span id="httpsInfo"></span><br>
+            <strong>Permissions API:</strong> <span id="permissionsAPI"></span>
+        </div>
+        
+        <div>
+            <button class="test-button" onclick="testBasicSupport()">1️⃣ Test Basic Support</button>
+            <button class="test-button" onclick="testPermissions()">2️⃣ Check Permissions</button>
+            <button class="test-button" onclick="testScreenCapture()">3️⃣ Try Screen Capture</button>
+            <button class="test-button" onclick="testPolicyBlocked()">4️⃣ Test Policy Block</button>
+        </div>
+        
+        <div id="results"></div>
+        
+        <div class="fix-steps">
+            <h3>🛠️ Quick Fixes to Try:</h3>
+            <ol>
+                <li><strong>Use HTTPS:</strong> Deploy to GitHub Pages, Netlify, or CodePen</li>
+                <li><strong>Chrome Settings:</strong> Go to Settings → Privacy & Security → Site Settings → Camera → Allow</li>
+                <li><strong>Try Incognito Mode:</strong> Opens a fresh browser window</li>
+                <li><strong>Different Browser:</strong> Try Firefox or Edge</li>
+                <li><strong>Corporate Network:</strong> Try personal device or mobile hotspot</li>
+            </ol>
+        </div>
+        
+        <div class="fix-steps">
+            <h3>🚀 Instant Working Solutions:</h3>
+            <ol>
+                <li><strong>CodePen:</strong> Copy the HTML and paste at <a href="https://codepen.io/pen/" target="_blank" style="color: #4ecdc4;">codepen.io/pen</a></li>
+                <li><strong>JSFiddle:</strong> Test at <a href="https://jsfiddle.net/" target="_blank" style="color: #4ecdc4;">jsfiddle.net</a></li>
+                <li><strong>GitHub Pages:</strong> Upload to GitHub repo with Pages enabled</li>
+                <li><strong>Demo Mode:</strong> Use the demo version for presentations (always works)</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Display browser info immediately
+        document.getElementById('browserInfo').textContent = navigator.userAgent;
+        document.getElementById('locationInfo').textContent = window.location.href;
+        document.getElementById('httpsInfo').textContent = location.protocol === 'https:' ? '✅ Secure' : '❌ Not secure (Required for screen capture)';
+        document.getElementById('permissionsAPI').textContent = 'permissions' in navigator ? '✅ Available' : '❌ Not available';
+
+        function addResult(message, type) {
+            const results = document.getElementById('results');
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.innerHTML = message;
+            results.appendChild(result);
+        }
+
+        function testBasicSupport() {
+            addResult('🧪 Testing basic MediaDevices support...', 'info');
+            
+            if (!navigator.mediaDevices) {
+                addResult('❌ MediaDevices API not available. Use Chrome/Edge/Firefox.', 'error');
+                return;
+            }
+            
+            if (!navigator.mediaDevices.getDisplayMedia) {
+                addResult('❌ getDisplayMedia not supported. Browser too old or not compatible.', 'error');
+                return;
+            }
+            
+            addResult('✅ Basic support available! APIs are present.', 'success');
+        }
+
+        async function testPermissions() {
+            addResult('🔐 Testing permissions...', 'info');
+            
+            if (!('permissions' in navigator)) {
+                addResult('⚠️ Permissions API not available, but screen capture might still work.', 'warning');
+                return;
+            }
+
+            try {
+                // Note: 'display-capture' permission is not yet widely supported in permissions API
+                addResult('⚠️ Display capture permissions cannot be checked via API yet. Try direct test instead.', 'warning');
+            } catch (error) {
+                addResult(`⚠️ Permission check failed: ${error.message}`, 'warning');
+            }
+        }
+
+        async function testScreenCapture() {
+            addResult('📺 Attempting actual screen capture test...', 'info');
+            
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: false
+                });
+                
+                addResult('🎉 SUCCESS! Screen capture works! You should see a browser popup.', 'success');
+                
+                // Stop the stream immediately
+                stream.getTracks().forEach(track => track.stop());
+                
+                addResult('✅ Test completed. Your screen recorder should work now!', 'success');
+                
+            } catch (error) {
+                if (error.name === 'NotAllowedError') {
+                    if (error.message.includes('permissions policy')) {
+                        addResult('❌ PERMISSIONS POLICY BLOCKED: Your browser/network is blocking screen capture. Try solutions below.', 'error');
+                    } else {
+                        addResult('❌ PERMISSION DENIED: You need to click "Share" when browser asks. Try again and grant permission.', 'error');
+                    }
+                } else if (error.name === 'NotSupportedError') {
+                    addResult('❌ NOT SUPPORTED: Use Chrome, Edge, or Firefox browser.', 'error');
+                } else if (error.name === 'AbortError') {
+                    addResult('⚠️ CANCELLED: You cancelled the sharing dialog. Try again and click "Share".', 'warning');
+                } else {
+                    addResult(`❌ ERROR: ${error.name} - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function testPolicyBlocked() {
+            addResult('🔍 Testing for policy restrictions...', 'info');
+            
+            // Check common indicators of policy blocks
+            const isHTTPS = location.protocol === 'https:';
+            const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            const isFileProtocol = location.protocol === 'file:';
+            
+            if (!isHTTPS && !isLocalhost) {
+                addResult('❌ HTTPS REQUIRED: Screen capture requires HTTPS. Deploy to GitHub Pages, Netlify, or CodePen.', 'error');
+            }
+            
+            if (isFileProtocol) {
+                addResult('❌ FILE PROTOCOL: Cannot use file:// protocol. Upload to web server or use online editor.', 'error');
+            }
+            
+            // Check for common corporate/educational domains
+            const hostname = location.hostname.toLowerCase();
+            const corporateDomains = ['corp', 'company', 'edu', 'school', 'gov'];
+            const isCorporate = corporateDomains.some(domain => hostname.includes(domain));
+            
+            if (isCorporate) {
+                addResult('⚠️ CORPORATE NETWORK: You might be on a restricted network. Try personal device or ask IT admin.', 'warning');
+            }
+            
+            if (isHTTPS || isLocalhost) {
+                addResult('✅ Protocol check passed. Try the screen capture test above.', 'success');
+            }
+        }
+
+        // Auto-run basic tests
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testBasicSupport();
+                testPolicyBlocked();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
